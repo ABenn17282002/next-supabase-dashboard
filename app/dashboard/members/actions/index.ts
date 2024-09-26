@@ -1,4 +1,5 @@
 "use server";
+import { readUserSession } from "@/lib/actions";
 import { createSupabaseAdmin } from "@/lib/supabase";
 import { json } from "stream/consumers";
 
@@ -11,6 +12,12 @@ export async function createMember(data: {
 	status: "active" | "resigned";
 	confirm: string;
 }) {
+
+	const { data: userSession } = await readUserSession();
+
+	if (userSession.session?.user.user_metadata.role !== "admin") {
+		return JSON.stringify({ error: { message: "You are not allowed to do this!" } });
+	}
 	
 	const supabase = await createSupabaseAdmin();
 

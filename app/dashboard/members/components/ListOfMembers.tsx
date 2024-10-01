@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import EditMember from "./edit/EditMember";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { useUserStore } from "@/lib/store/user";
 
 export default function ListOfMembers() {
 	const members = [
@@ -32,6 +33,11 @@ export default function ListOfMembers() {
 			status: "active",
 		},
 	];
+
+	const user = useUserStore.getState().user;
+
+	const isAdmin = user?.user_metadata.role === "admin";
+
 	return (
 		<div className="dark:bg-inherit bg-white mx-2 rounded-sm">
 			{members.map((member, index) => {
@@ -79,7 +85,7 @@ export default function ListOfMembers() {
 								<TrashIcon />
 								Delete
 							</Button>
-							<EditMember />
+							<EditMember isAdmin={isAdmin} />
 						</div>
 					</div>
 				);

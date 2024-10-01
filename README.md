@@ -16,10 +16,9 @@ npm run dev
 ```
 
 ## Check list
--   [×] setup supbase fill env.sample
--   [×] create developer user
--   [×] header == x-forwarded-host
--   [×] handle create user using service role
+-   [ ] setup supbase fill env.sample
+-   [ ] create developer user
+-   [ ] handle create user using service role
 -   [ ] Prevent UI from none admin
 -   [ ] update create user for only admin to create only
 -   [ ] read user

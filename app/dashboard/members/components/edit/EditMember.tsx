@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Pencil1Icon } from "@radix-ui/react-icons";
 import EditForm from "./EditorForm";
 
-export default function EditMember({ isAdmin }: { isAdmin: boolean }) {
+export default function EditMember() {
 	return (
 		<DailogForm
 			id="update-trigger"
@@ -15,7 +15,7 @@ export default function EditMember({ isAdmin }: { isAdmin: boolean }) {
 					Edit
 				</Button>
 			}
-			form={<EditForm isAdmin={isAdmin} />}
+			form={<EditForm />}
 		/>
 	);
 }

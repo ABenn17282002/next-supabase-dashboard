@@ -20,9 +20,9 @@ npm run dev
 -   [×] create developer user
 -   [×] header == x-forwarded-host
 -   [×] handle create user using service role
--   [ ] Prevent UI from none admin
--   [ ] update create user for only admin to create only
--   [ ] read user
+-   [×] Prevent UI from none admin
+-   [×] update create user for only admin to create only
+-   [×] read user
 -   [ ] update user
 -   [ ] delete user
 

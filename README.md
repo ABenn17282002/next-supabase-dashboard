@@ -24,7 +24,7 @@ npm run dev
 -   [×] update create user for only admin to create only
 -   [×] read user
 -   [ ] update user
--   [ ] delete user
+-   [×] delete user
 
 ## Tables
 

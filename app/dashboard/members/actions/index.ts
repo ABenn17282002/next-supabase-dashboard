@@ -1,7 +1,7 @@
 "use server";
 import { readUserSession } from "@/lib/actions";
 import { createSupabaseAdmin, createSupbaseServerClient } from "@/lib/supabase";
-import { unstable_noStore } from "next/cache";
+import { revalidatePath, unstable_noStore } from "next/cache";
 import { json } from "stream/consumers";
 
 
@@ -51,6 +51,7 @@ export async function createMember(data: {
 							member_id: createResult.data.user?.id, 
 							status:data.status
 					});
+			revalidatePath("/dashboard/member");
 			return JSON.stringify(permissionResult)
 		}
 	}
@@ -63,8 +64,51 @@ export async function updateMemberById(id: string) {
 }
 
 
-export async function deleteMemberById(id: string) {}
-
+export async function deleteMemberById(user_id: string) {
+	// call to Session
+	const { data: userSession } = await readUserSession();
+  
+	// admin only
+	if (userSession.session?.user.user_metadata.role !== "admin") {
+	  return JSON.stringify({ error: { message: "You are not allowed to do this!" } });
+	}
+  
+	const supabase = await createSupbaseServerClient();
+  
+	// Query to check how many active admins exist
+	const { data: admins, error } = await supabase
+	  .from("permission")
+	  .select("member_id")  // Select member_id instead of id
+	  .eq("role", "admin")
+	  .eq("status", "active");
+  
+	// Log the query result
+	console.log("Admin query result:", admins, error);
+  
+	if (error || !admins) {
+	  return JSON.stringify({ error: { message: "Failed to retrieve admin count!" } });
+	}
+  
+	// Prevent deletion if there is only one active admin and the admin to be deleted is the current user
+	if (admins.length === 1 && admins[0].member_id === user_id) {
+	  return JSON.stringify({ error: { message: "Cannot delete the last administrator!" } });
+	}
+  
+	// Delete the user account
+	const supabaseAdmin = await createSupabaseAdmin();
+	const deleteResult = await supabaseAdmin.auth.admin.deleteUser(user_id);
+  
+	if (deleteResult.error?.message) {
+	  console.error("Deletion error:", deleteResult.error.message);
+	  return JSON.stringify({ error: { message: deleteResult.error.message } });
+	} else {
+	  // Remove the user from the member table after successful deletion
+	  const result = await supabase.from("member").delete().eq("id", user_id);
+	  revalidatePath("/dashboard/member");
+	  return JSON.stringify(result);
+	}
+  }
+  
 
 export async function readMembers() {
 	// Use useUserStore to get the current user information

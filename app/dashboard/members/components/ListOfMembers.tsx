@@ -16,8 +16,6 @@ export default async function ListOfMembers() {
 
   const user = useUserStore.getState().user;
 
-  console.log(user);
-
   const isAdmin = user?.user_metadata?.role === "admin";
 
   if (!permissions || permissions.length === 0) {

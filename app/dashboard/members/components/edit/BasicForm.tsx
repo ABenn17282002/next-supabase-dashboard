@@ -17,6 +17,7 @@ import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/use-toast";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import { cn } from "@/lib/utils";
+import { IPermission } from "@/lib/types";
 
 const FormSchema = z.object({
 	name: z.string().min(2, {
@@ -24,11 +25,11 @@ const FormSchema = z.object({
 	}),
 });
 
-export default function BasicForm() {
+export default function BasicForm({ permission } :{ permission: IPermission }) {
 	const form = useForm<z.infer<typeof FormSchema>>({
 		resolver: zodResolver(FormSchema),
 		defaultValues: {
-			name: "",
+			name: permission.member.name,
 		},
 	});
 

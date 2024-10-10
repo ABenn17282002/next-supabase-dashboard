@@ -28,7 +28,8 @@ export async function POST(req: Request) {
   // member テーブルにユーザー情報を追加
   const { error: memberError } = await supabase.from('member').insert({
     id: data.user.id,
-    name: "dev_user"
+    name: "dev_user",
+    email:data.user.email
   });
 
   if (memberError) {

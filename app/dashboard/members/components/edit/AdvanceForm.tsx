@@ -24,21 +24,22 @@ import {
 import { toast } from "@/components/ui/use-toast";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import { cn } from "@/lib/utils";
+import { IPermission } from "@/lib/types";
 
 const FormSchema = z.object({
 	role: z.enum(["admin", "user"]),
 	status: z.enum(["active", "resigned"]),
 });
 
-export default function AdvanceForm() {
+export default function AdvanceForm({ permission } :{ permission: IPermission }) {
 	const roles = ["admin", "user"];
 	const status = ["active", "resigned"];
 
 	const form = useForm<z.infer<typeof FormSchema>>({
 		resolver: zodResolver(FormSchema),
 		defaultValues: {
-			role: "user",
-			status: "active",
+			role: permission.role,
+			status: permission.status,
 		},
 	});
 

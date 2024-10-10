@@ -1,4 +1,5 @@
 export type IPermission = {
+	email: string | undefined;
     id: string;
     created_at: string;
     role: "user" | "admin";
@@ -7,7 +8,8 @@ export type IPermission = {
     member: {
       id: string;
       created_at: string;
-      name: "user 1";
+      name: string;
+      email:string;
     };
   };
   

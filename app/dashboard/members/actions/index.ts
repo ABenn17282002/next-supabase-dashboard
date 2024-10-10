@@ -38,7 +38,11 @@ export async function createMember(data: {
 		// create member
 		const memberResult = await supabase
 		.from("member")
-		.insert({ name: data.name, id: createResult.data.user?.id });
+		.insert({ 
+				name: data.name, 
+				id: createResult.data.user?.id, 
+				email: data.email
+			});
 
 		if (memberResult.error?.message) {
 			return JSON.stringify(memberResult);

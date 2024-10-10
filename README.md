@@ -42,6 +42,7 @@ permission_table:{
 member_table:{
     id: uuid,
     name: text,
+    email: text,
     created_at: date,
 }
 ```

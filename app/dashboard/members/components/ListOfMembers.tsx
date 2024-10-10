@@ -12,8 +12,6 @@ import DeleteMember from "./DeleteMember";
 export default async function ListOfMembers() {
   const { data: permissions } = await readMembers();
 
-  console.log(permissions);
-
   const user = useUserStore.getState().user;
 
   const isAdmin = user?.user_metadata?.role === "admin";
@@ -70,7 +68,9 @@ export default async function ListOfMembers() {
 
             <div className="flex gap-2 items-center">
               {isAdmin && <DeleteMember user_id={permission.member.id} />}
-              <EditMember isAdmin={isAdmin} />
+              <EditMember isAdmin={isAdmin} 
+                          permission={permission}
+                />
             </div>
           </div>
         );

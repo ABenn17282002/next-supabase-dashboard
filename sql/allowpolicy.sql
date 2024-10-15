@@ -50,4 +50,9 @@ USING (
   is_admin(auth.uid())
 );
 
-
+-- (4) Allow authenticated users to Update data
+CREATE POLICY "Allow all users to update their own data or admin"
+ON member
+AS PERMISSIVE FOR UPDATE
+TO authenticated
+USING (auth.uid() = id OR is_admin(auth.uid()));

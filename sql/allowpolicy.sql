@@ -56,3 +56,11 @@ ON member
 AS PERMISSIVE FOR UPDATE
 TO authenticated
 USING (auth.uid() = id OR is_admin(auth.uid()));
+
+-- (5) Allow authenticated users to update data if they are admin
+CREATE POLICY "Enable update for users based on user_id" 
+ON "public"."permission"
+AS PERMISSIVE FOR UPDATE
+TO authenticate
+USING (is_admin(auth.uid()))
+WITH CHECK (true);

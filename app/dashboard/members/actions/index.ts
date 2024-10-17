@@ -4,7 +4,6 @@ import { createSupabaseAdmin, createSupbaseServerClient } from "@/lib/supabase";
 import { revalidatePath, unstable_noStore } from "next/cache";
 import { json } from "stream/consumers";
 
-
 export async function createMember(data: {
 	email: string;
 	password: string;
@@ -76,6 +75,44 @@ export async function updateMemberBasicById(
 	return JSON.stringify(result);
 }
 
+export async function updateMemberAdvanceById(
+	permission_id: string ,
+	user_id:string,
+	data: {
+		role: "user" | "admin";
+		status: "active" | "resigned";
+	}
+) {
+
+	const { data: userSession } = await readUserSession();
+
+	if (userSession.session?.user.user_metadata.role !== "admin") {
+		return JSON.stringify({ error: { message: "You are not allowed to do this!" } });
+	}
+	
+	const supabaseAdmin = await createSupabaseAdmin();
+
+	// update admin data
+	const updateResult = await supabaseAdmin.auth.admin.updateUserById(
+		user_id,
+		{ user_metadata: { role: data.role } }
+	)
+
+	if (updateResult.error?.message) {
+
+		return JSON.stringify(updateResult);
+		
+	} else {
+
+	// update permission data
+	const supabase = await createSupbaseServerClient();
+	const result = await supabase.from("permission").update(data).eq("id", permission_id);
+	revalidatePath("/dashboard/member");
+	return JSON.stringify(result);
+	  }
+
+}
+
 
 export async function deleteMemberById(user_id: string) {
 	// call to Session
@@ -120,8 +157,8 @@ export async function deleteMemberById(user_id: string) {
 	  revalidatePath("/dashboard/member");
 	  return JSON.stringify(result);
 	}
-  }
-  
+}
+
 
 export async function readMembers() {
 	// Use useUserStore to get the current user information

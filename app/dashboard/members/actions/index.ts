@@ -104,12 +104,58 @@ export async function updateMemberAdvanceById(
 		
 	} else {
 
-	// update permission data
-	const supabase = await createSupbaseServerClient();
-	const result = await supabase.from("permission").update(data).eq("id", permission_id);
-	revalidatePath("/dashboard/member");
-	return JSON.stringify(result);
-	  }
+		// update permission data
+		const supabase = await createSupbaseServerClient();
+		const result = await supabase.from("permission").update(data).eq("id", permission_id);
+		revalidatePath("/dashboard/member");
+		return JSON.stringify(result);
+
+	}
+
+}
+export async function updateMemberAccountById(
+	user_id:string,
+	data: {
+		email:string;
+		password?: string | undefined,
+		comfirm?: string | undefined,
+	}
+) {
+
+	const { data: userSession } = await readUserSession();
+
+	if (userSession.session?.user.user_metadata.role !== "admin") {
+		return JSON.stringify({ error: { message: "You are not allowed to do this!" } });
+	}
+	
+	const supabaseAdmin = await createSupabaseAdmin();
+
+	let updateObject :{
+		email:string;
+		password?: string | undefined;
+	} = { email:data.email  }
+
+	if (data.password){
+		updateObject["password"] = data.password
+	}
+
+	// update admin data
+	const updateResult = await supabaseAdmin.auth.admin.updateUserById(
+		user_id,
+		updateObject 
+	)
+
+	if (updateResult.error?.message) {
+		
+		return JSON.stringify({ error: { message: updateResult.error.message } });
+
+	} else {
+		// update the user email
+		const supabase = await createSupabaseAdmin();
+		const result = await supabase.from("member").update({email:data.email}).eq("id", user_id);
+		revalidatePath("/dashboard/member");
+		return JSON.stringify(result);
+	}
 
 }
 

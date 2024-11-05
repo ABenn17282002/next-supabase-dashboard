@@ -113,6 +113,7 @@ export async function updateMemberAdvanceById(
 	}
 
 }
+
 export async function updateMemberAccountById(
 	user_id:string,
 	data: {
@@ -215,4 +216,23 @@ export async function readMembers() {
 	
 	// Fetch data from the "permission" table and also retrieve data from the "member" table (via foreign key relation)
 	return await supabase.from("permission").select("* , member(*)");
+}
+
+
+export async function searchMembers(query: string) {
+
+	// Create the Supabase client on the server side
+	const supabase = await createSupbaseServerClient();
+
+	try {
+		// console.log(query);
+	  	// Now we can execute the Supabase query and get the result
+		const { data, error } = await supabase.rpc("search_members", { query });
+	  	// display data in console on success
+		console.log(data);
+
+	} catch (error) {
+		console.error("Error fetching search results:", error);
+		throw new Error("Failed to fetch search results.");
+	}
 }

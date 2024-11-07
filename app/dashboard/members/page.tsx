@@ -6,23 +6,30 @@ import SearchMembers from "./components/SearchMembers";
 import CreateMember from "./components/create/CreateMember";
 import { useUserStore } from "@/lib/store/user";
 
-export default function Members() {
+export default function Members({
+  searchParams,
+}: {
+  searchParams?: {
+    query?: string;
+  };
+}) {
 
-	const user = useUserStore.getState().user;
-
+	const user = useUserStore.getState().user
 	const isAdmin = user?.user_metadata.role === "admin";
+  	const query = searchParams?.query || '';
+
 
 	return (
 		<div className="space-y-5 w-full overflow-y-auto px-3">
 		  <h1 className="text-3xl font-bold">Members</h1>
-		  {isAdmin && (
-			<div className="flex gap-2">
-			  <SearchMembers />
-			  <CreateMember />
+		  	{isAdmin && (
+			  <div className="flex gap-2">
+				<SearchMembers placeholder="search by role, name" />
+			  	<CreateMember />
 			</div>
-		  )}
+			)}
 		  
-		  <MemberTable />
+		  <MemberTable query={query} />
 		</div>
 	  );
 }

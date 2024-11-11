@@ -64,3 +64,32 @@ AS PERMISSIVE FOR UPDATE
 TO authenticate
 USING (is_admin(auth.uid()))
 WITH CHECK (true);
+
+-- (6) SearchMembers function
+create or replace function search_members(query text)
+returns table(
+  member_id uuid,
+  role text,
+  created_at timestamp with time zone,
+  status text,
+  member jsonb  -- 戻り値の型に合わせて jsonb を指定
+) as $$
+begin
+  return query
+  select 
+    permission.member_id,
+    permission.role,
+    permission.created_at,
+    permission.status,
+    json_build_object(
+      'id', member.id,
+      'name', member.name,
+      'email', member.email,
+      'created_at', member.created_at
+    )::jsonb as member  -- `json` を `jsonb` にキャスト
+  from permission
+  join member on permission.member_id = member.id
+  where member.name ilike '%' || query || '%'
+     or permission.role ilike '%' || query || '%';
+end;
+$$ language plpgsql;

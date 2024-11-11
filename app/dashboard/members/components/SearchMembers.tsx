@@ -1,51 +1,47 @@
-"use client";
+'use client';
 
 import { Input } from "@/components/ui/input";
-import React, { startTransition, useState } from "react";
-import { searchMembers } from "../actions";
-import { toast } from '@/components/ui/use-toast';
+import React, { useState } from "react";
+import { useSearchParams, usePathname, useRouter } from 'next/navigation';
 
-export default function SearchMembers() {
-	const [query, setQuery] = useState("");
-  
-	const handleSearch = () => {
-	  startTransition(async () => {
-		try {
-		  const result = await searchMembers(query);
-  
-		  // 成功時のトースト表示
-		  toast({
-			title: "検索成功",
-			description: (
-			  <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-				<code className="text-white">検索クエリ: &quot;{query}&quot;  で結果が見つかりました</code>
-			  </pre>
-			),
-		  });
-		  console.log(query);
-		} catch (error: any) {
-		  // エラー時のトースト表示
-		  toast({
-			title: "検索エラー",
-			description: (
-			  <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-				<code className="text-white">エラー: {error.message}</code>
-			  </pre>
-			),
-		  });
-		}
-	  });
-	};
-  
-	return (
-	  <Input
-		placeholder="search by role, name"
-		className="ring-zinc-300 bg-white dark:bg-inherit focus:dark:ring-zinc-700 focus:ring-zinc-300"
-		value={query}
-		onChange={(e) => setQuery(e.target.value)}
-		onKeyDown={(e) => {
-		  if (e.key === "Enter") handleSearch();
-		}}
-	  />
-	);
+export default function SearchMembers({ placeholder }: { placeholder: string }) {
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const router = useRouter();
+  const [searchTerm, setSearchTerm] = useState("");
+
+  function handleSearch(term: string) {
+    // Convert ReadonlyURLSearchParams to URLSearchParams
+    const params = new URLSearchParams(searchParams.toString());
+
+    if (term) {
+      params.set('query', term);
+      console.log(params.toString()); 
+    } else {
+      params.delete('query');
+      console.log(params.toString()); 
+    }
+
+    // Construct the full URL string only if there are params
+    const newUrl = params.toString() ? `${pathname}?${params.toString()}` : pathname;
+    console.log("URL to navigate to:", newUrl); // Log the URL string
+
+    // Use replace to update the URL without reloading
+    router.replace(newUrl);
+    
   }
+
+  return (
+    <Input
+      placeholder={placeholder}
+      value={searchTerm}
+      onChange={(e) => setSearchTerm(e.target.value)}
+      className="ring-zinc-300 bg-white dark:bg-inherit focus:dark:ring-zinc-700 focus:ring-zinc-300"
+      onKeyDown={(e) => {
+        if (e.key === "Enter") handleSearch(searchTerm); // Pass searchTerm to handleSearch
+      }}
+      spellCheck="false" // Explicitly set spellCheck
+      data-ms-editor="true" // Explicitly set data-ms-editor
+    />
+  );
+}

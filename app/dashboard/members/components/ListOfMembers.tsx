@@ -5,12 +5,21 @@ import EditMember from "./edit/EditMember";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useUserStore } from "@/lib/store/user";
-import { readMembers } from "../actions";
+import { readMembers, searchMembers } from "../actions";
 import { IPermission } from "@/lib/types";
 import DeleteMember from "./DeleteMember";
 
-export default async function ListOfMembers() {
-  const { data: permissions } = await readMembers();
+interface ListOfMembersProps {
+  query: string;
+}
+
+export default async function ListOfMembers({ query }: ListOfMembersProps) {
+  console.log("Query received:", query); 
+
+  const result = query ? await searchMembers(query) : await readMembers();
+  const permissions = result?.data || []; // empty array if result is null or no data
+
+  console.log("Permissions data:", permissions); 
 
   const user = useUserStore.getState().user;
 

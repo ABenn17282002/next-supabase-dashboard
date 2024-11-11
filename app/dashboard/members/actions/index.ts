@@ -223,16 +223,17 @@ export async function searchMembers(query: string) {
 
 	// Create the Supabase client on the server side
 	const supabase = await createSupbaseServerClient();
-
+	
 	try {
-		// console.log(query);
-	  	// Now we can execute the Supabase query and get the result
 		const { data, error } = await supabase.rpc("search_members", { query });
-	  	// display data in console on success
-		console.log(data);
-
+		if (error) {
+			console.error("Error fetching search results:", error);
+			return { data: [] }; // return empty array even on error
+		}
+		console.log("Data fetched from search_members:", data);
+		return { data }; // return in object format
 	} catch (error) {
 		console.error("Error fetching search results:", error);
-		throw new Error("Failed to fetch search results.");
+		return { data: [] }; // return empty array even on error
 	}
 }

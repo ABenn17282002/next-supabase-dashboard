@@ -23,7 +23,7 @@ npm run dev
 -   [×] Prevent UI from none admin
 -   [×] update create user for only admin to create only
 -   [×] read user
--   [ ] update user
+-   [×] update user
 -   [×] delete user
 
 ## Tables

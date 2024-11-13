@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/select";
 import { createTodo, updateTodoById } from "../actions";
 import { Checkbox } from "@/components/ui/checkbox";
+import { useTransition } from "react";
 
 const FormSchema = z.object({
 	title: z.string().min(10, {
@@ -35,6 +36,9 @@ const FormSchema = z.object({
 });
 
 export default function TodoForm({ isEdit }: { isEdit: boolean }) {
+
+	const [isPending, startTransition] = useTransition()
+
 	const form = useForm<z.infer<typeof FormSchema>>({
 		resolver: zodResolver(FormSchema),
 		defaultValues: {
@@ -44,20 +48,37 @@ export default function TodoForm({ isEdit }: { isEdit: boolean }) {
 	});
 
 	const handleCreateMember = (data: z.infer<typeof FormSchema>) => {
-		createTodo();
+		
+		startTransition(async () => {
+			const result = await createTodo(data.title);
+			const { error } = JSON.parse(result);
+			if (error?.message) {
+				toast({
+					title: "Fail to create todo",
+					description: (
+						<pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
+							<code className="text-white">{error.message}</code>
+						</pre>
+					),
+				});
+			} else {
+				document.getElementById("create-trigger")?.click();
+				toast({
+					title: "Successfully create todo",
+					description: (
+						<pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
+							<code className="text-white">{data.title} is create!</code>
+						</pre>
+					),
+				});
+			}
+			form.reset()
 
-		document.getElementById("create-trigger")?.click();
-
-		toast({
-			title: "You submitted the following values:",
-			description: (
-				<pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-					<code className="text-white">
-						{JSON.stringify(data, null, 2)}
-					</code>
-				</pre>
-			),
 		});
+
+
+
+
 	};
 
 	const handleUpdateMember = (data: z.infer<typeof FormSchema>) => {

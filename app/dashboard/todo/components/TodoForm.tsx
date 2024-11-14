@@ -50,7 +50,7 @@ export default function TodoForm({ isEdit }: { isEdit: boolean }) {
 	const handleCreateMember = (data: z.infer<typeof FormSchema>) => {
 		
 		startTransition(async () => {
-			const result = await createTodo(data.title);
+			const result = await createTodo(data.title,data.completed);
 			const { error } = JSON.parse(result);
 			if (error?.message) {
 				toast({
@@ -62,7 +62,6 @@ export default function TodoForm({ isEdit }: { isEdit: boolean }) {
 					),
 				});
 			} else {
-				document.getElementById("create-trigger")?.click();
 				toast({
 					title: "Successfully create todo",
 					description: (
@@ -73,11 +72,8 @@ export default function TodoForm({ isEdit }: { isEdit: boolean }) {
 				});
 			}
 			form.reset()
-
+			document.getElementById("create-trigger")?.click();
 		});
-
-
-
 
 	};
 

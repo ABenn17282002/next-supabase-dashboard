@@ -11,5 +11,14 @@ export type IPermission = {
       name: string;
       email:string;
     };
-  };
-  
+};
+
+// Define Todo type and reuse IPermission member structure
+export type Todo = {
+  id: string;
+  title: string;
+  completed: boolean;
+  created_at: string;
+  created_by: string;
+  member: IPermission["member"] | IPermission["member"][]; // 配列またはオブジェクト
+};

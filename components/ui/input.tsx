@@ -16,6 +16,8 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
 				)}
 				ref={ref}
 				{...props}
+				spellCheck={false}  // disable spellcheck
+				autoComplete="off"  // Disable auto-completion
 			/>
 		);
 	}

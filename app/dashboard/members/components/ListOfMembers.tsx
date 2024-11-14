@@ -14,12 +14,9 @@ interface ListOfMembersProps {
 }
 
 export default async function ListOfMembers({ query }: ListOfMembersProps) {
-  console.log("Query received:", query); 
 
   const result = query ? await searchMembers(query) : await readMembers();
   const permissions = result?.data || []; // empty array if result is null or no data
-
-  console.log("Permissions data:", permissions); 
 
   const user = useUserStore.getState().user;
 

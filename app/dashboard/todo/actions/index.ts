@@ -85,4 +85,12 @@ export async function fetchTodoById(id: string) {
     return { data };
 }
 
-export async function deleteTodoById(id: string) {}
+// Delete Todo function
+export async function deleteTodoById(id: string) {
+
+	const supabase = await createSupbaseServerClient();
+
+	const result = await supabase.from("todo").delete().eq("id", id);
+	revalidatePath("/dashboard/todo");
+	return JSON.stringify(result);
+}

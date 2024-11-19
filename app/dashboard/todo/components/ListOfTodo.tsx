@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import EditTodo from "./EditTodo";
 import { cn } from "@/lib/utils";
 import { readTodos } from "../actions";
+import DeleteTodo from "./DeleteTodo";
 
 export default async function ListOfTodo() {
 	const { data: todos } = await readTodos();
@@ -43,12 +44,9 @@ export default async function ListOfTodo() {
 							: todo.member?.name || "Unknown"}
 					</h1>
 					<div className="flex gap-2 items-center">
-						<Button variant="outline" className="bg-dark dark:bg-inherit">
-							<TrashIcon />
-							delete
-						</Button>
+						<DeleteTodo id={todo.id}/>
 						<EditTodo todoId={todo.id} />
-					</div>
+					</div>	
 				</div>
 			))}
 		</div>

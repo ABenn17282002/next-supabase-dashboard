@@ -52,8 +52,37 @@ export async function readTodos(): Promise<{ data: Todo[] | null }> {
 
 }
 
-export async function updateTodoById(id: string) {
-	console.log("update todo");
+// UpdateTodo function
+export async function updateTodoById(
+	id: string ,
+	data: {
+		title:string,
+		completed: boolean
+	}
+){
+	const supabase = await createSupbaseServerClient();
+	// update title,comleted
+	const result = await supabase.from("todo").update(data).eq("id", id);
+	revalidatePath("/dashboard/todo");
+	return JSON.stringify(result);
+}
+
+// fecthTodo funciton
+export async function fetchTodoById(id: string) {
+
+    const supabase = await createSupbaseServerClient();
+    const { data, error } = await supabase
+        .from('todo') 
+        .select('*')
+        .eq('id', id)
+        .single();
+
+    if (error) {
+        console.error("Error fetching todo:", error.message);
+        return { error: error.message };
+    }
+
+    return { data };
 }
 
 export async function deleteTodoById(id: string) {}

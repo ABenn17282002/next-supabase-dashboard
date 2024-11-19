@@ -27,6 +27,7 @@ import {
 import { createTodo, updateTodoById } from "../actions";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useTransition } from "react";
+import { Todo } from "@/lib/types";
 
 const FormSchema = z.object({
 	title: z.string().min(10, {
@@ -35,16 +36,21 @@ const FormSchema = z.object({
 	completed: z.boolean(),
 });
 
-export default function TodoForm({ isEdit }: { isEdit: boolean }) {
+export default function TodoForm({ 
+	isEdit,
+	todoData,
+    todoId
+ }: { 
+	isEdit:boolean,
+	todoData?: { title: string; completed: boolean }; 
+    todoId?: string;
+}) {
 
 	const [isPending, startTransition] = useTransition()
 
 	const form = useForm<z.infer<typeof FormSchema>>({
 		resolver: zodResolver(FormSchema),
-		defaultValues: {
-			title: "",
-			completed: false,
-		},
+		defaultValues: todoData || { title: "", completed: false }, 
 	});
 
 	const handleCreateMember = (data: z.infer<typeof FormSchema>) => {
@@ -74,25 +80,48 @@ export default function TodoForm({ isEdit }: { isEdit: boolean }) {
 			form.reset()
 			document.getElementById("create-trigger")?.click();
 		});
-
 	};
+	// 	updateTodoById("hello", {
+    //         title: data.title,
+    //         completed: data.completed,
+    //     });
+	// 	document.getElementById("update-trigger")?.click();
 
-	const handleUpdateMember = (data: z.infer<typeof FormSchema>) => {
-		updateTodoById("hello");
-		document.getElementById("update-trigger")?.click();
+	// 	toast({
+	// 		title: "You submitted the following values:",
+	// 		description: (
+	// 			<pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
+	// 				<code className="text-white">
+	// 					{JSON.stringify(data, null, 2)}
+	// 				</code>
+	// 			</pre>
+	// 		),
+	// 	});
+	// };
 
-		toast({
-			title: "You submitted the following values:",
-			description: (
-				<pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-					<code className="text-white">
-						{JSON.stringify(data, null, 2)}
-					</code>
-				</pre>
-			),
-		});
-	};
-
+    const handleUpdateMember = (data: z.infer<typeof FormSchema>) => {
+        startTransition(async () => {
+            if (!todoId) return;
+            const result = await updateTodoById(todoId, {
+                title: data.title,
+                completed: data.completed,
+            });
+			const { error } = JSON.parse(result);
+            if (error?.message) {
+                toast({
+                    title: "Error updating todo",
+                    description: error?.message,
+                });
+            } else {
+                toast({
+                    title: "Todo updated successfully",
+                    description: `Updated ${data.title}`,
+                });
+            }
+            document.getElementById("update-trigger")?.click();
+        });
+    };
+	
 	function onSubmit(data: z.infer<typeof FormSchema>) {
 		if (isEdit) {
 			handleUpdateMember(data);
@@ -132,8 +161,10 @@ export default function TodoForm({ isEdit }: { isEdit: boolean }) {
 						<FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 shadow">
 							<FormControl>
 								<Checkbox
-									checked={field.value}
-									onCheckedChange={field.onChange}
+                                    checked={field.value}
+                                    onCheckedChange={(checked) => {
+                                        field.onChange(checked === true);
+                                    }}
 								/>
 							</FormControl>
 							<div className="space-y-1 leading-none">

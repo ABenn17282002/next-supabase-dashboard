@@ -47,7 +47,7 @@ export default async function ListOfTodo() {
 							<TrashIcon />
 							delete
 						</Button>
-						<EditTodo />
+						<EditTodo todoId={todo.id} />
 					</div>
 				</div>
 			))}

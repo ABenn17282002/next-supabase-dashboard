@@ -45,10 +45,43 @@ export async function readTodos(): Promise<{ data: Todo[] | null }> {
 
 	const supabase = await createSupbaseServerClient();
 
-	// ReadTodo function: Fetches todo item details along with creator information
-	return await supabase
-	.from("todo")
-	.select("id, title, completed, created_at, created_by, member:created_by (id, created_at, name, email)");
+    // Get current user information
+    const {
+        data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+        return { data: null }; // If user is not authenticated
+    }
+
+    // Check the `permission` table to determine if you are an administrator
+    const { data: isAdminData } = await supabase
+        .from("permission")
+        .select("role")
+        .eq("member_id", user.id)
+        .eq("role", "admin")
+        .single();
+
+    const isAdmin = isAdminData !== null;
+
+    // Branch queries based on flags
+    const query = supabase
+        .from("todo")
+        .select("id, title, completed, created_at, created_by, member:created_by (id, created_at, name, email)");
+
+    if (!isAdmin) {
+        // Filter by `created_by` for general users
+        query.eq("created_by", user.id);
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+        console.error("Error fetching todos:", error.message);
+        return { data: null };
+    }
+
+    return { data };
 
 }
 

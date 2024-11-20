@@ -1,4 +1,4 @@
--- ※ A2024/10/01, it is necessary to register the email domain in order to log in with the registered email address.
+-- ※ 2024/10/01, it is necessary to register the email domain in order to log in with the registered email address.
 --(1) Allow only users with 'admin' role to insert data
 CREATE POLICY "Allow admin insert"
 ON member

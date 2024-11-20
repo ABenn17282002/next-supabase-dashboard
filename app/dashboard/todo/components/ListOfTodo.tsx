@@ -5,9 +5,23 @@ import EditTodo from "./EditTodo";
 import { cn } from "@/lib/utils";
 import { readTodos } from "../actions";
 import DeleteTodo from "./DeleteTodo";
+import { createSupbaseServerClient } from "@/lib/supabase";
 
 export default async function ListOfTodo() {
 	const { data: todos } = await readTodos();
+
+	const supabase = await createSupbaseServerClient();
+    const {
+        data: { user },
+    } = await supabase.auth.getUser();
+
+	if (!user) {
+        return (
+            <div className="dark:bg-inherit bg-white mx-2 rounded-sm p-4">
+                <h2>No tasks found. Please log in.</h2>
+            </div>
+        );
+    }
 
 	if (!todos || todos.length === 0) {
 		return (
@@ -15,7 +29,7 @@ export default async function ListOfTodo() {
 				<h2>No tasks found.</h2>
 			</div>
 		);
-	}
+	} 
 
 	return (
 		<div className="dark:bg-inherit bg-white mx-2 rounded-sm">
@@ -44,8 +58,12 @@ export default async function ListOfTodo() {
 							: todo.member?.name || "Unknown"}
 					</h1>
 					<div className="flex gap-2 items-center">
-						<DeleteTodo id={todo.id}/>
-						<EditTodo todoId={todo.id} />
+					{todo.created_by === user.id && (
+                            <>
+                                <EditTodo todoId={todo.id} />
+                            </>
+                        )}
+								<DeleteTodo id={todo.id} />
 					</div>	
 				</div>
 			))}

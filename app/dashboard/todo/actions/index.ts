@@ -45,10 +45,43 @@ export async function readTodos(): Promise<{ data: Todo[] | null }> {
 
 	const supabase = await createSupbaseServerClient();
 
-	// ReadTodo function: Fetches todo item details along with creator information
-	return await supabase
-	.from("todo")
-	.select("id, title, completed, created_at, created_by, member:created_by (id, created_at, name, email)");
+    // Get current user information
+    const {
+        data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+        return { data: null }; // If user is not authenticated
+    }
+
+    // Check the `permission` table to determine if you are an administrator
+    const { data: isAdminData } = await supabase
+        .from("permission")
+        .select("role")
+        .eq("member_id", user.id)
+        .eq("role", "admin")
+        .single();
+
+    const isAdmin = isAdminData !== null;
+
+    // Branch queries based on flags
+    const query = supabase
+        .from("todo")
+        .select("id, title, completed, created_at, created_by, member:created_by (id, created_at, name, email)");
+
+    if (!isAdmin) {
+        // Filter by `created_by` for general users
+        query.eq("created_by", user.id);
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+        console.error("Error fetching todos:", error.message);
+        return { data: null };
+    }
+
+    return { data };
 
 }
 
@@ -86,11 +119,64 @@ export async function fetchTodoById(id: string) {
 }
 
 // Delete Todo function
-export async function deleteTodoById(id: string) {
+export async function deleteTodoById(id: string): Promise<string> {
 
-	const supabase = await createSupbaseServerClient();
+    const supabase = await createSupbaseServerClient();
 
-	const result = await supabase.from("todo").delete().eq("id", id);
-	revalidatePath("/dashboard/todo");
-	return JSON.stringify(result);
+    // Get current logged in user
+    const {
+        data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+        // If you are not logged in
+        return JSON.stringify({ error: { message: "ログインしてください。" } });
+    }
+
+    // Get task information
+    const { data: todo, error: todoError } = await supabase
+        .from("todo")
+        .select("created_by, completed")
+        .eq("id", id)
+        .single();
+
+    if (todoError || !todo) {
+        // If task not found
+        return JSON.stringify({ error: { message: "Target task not found." } });
+    }
+
+    // Check if you are an administrator
+    const { data: isAdminData } = await supabase
+        .from("permission")
+        .select("role")
+        .eq("member_id", user.id)
+        .eq("role", "admin")
+        .single();
+
+    const isAdmin = isAdminData !== null;
+
+    // Deletion conditions for administrators
+    if (isAdmin) {
+        // If a task other than your own is uncompleted, you cannot delete it.
+        if (todo.created_by !== user.id && !todo.completed) {
+            return JSON.stringify({
+                error: { message: "The administrator cannot delete someone else's uncompleted tasks." },
+            });
+        }
+    } 
+
+    // Perform deletion if conditions are met
+    const { data: deleteResult, error: deleteError } = await supabase
+        .from("todo")
+        .delete()
+        .eq("id", id);
+
+    if (deleteError) {
+        return JSON.stringify({ error: { message: "Failed to delete task." } });
+    }
+
+    // Revalidate cache
+    revalidatePath("/dashboard/todo");
+
+    return JSON.stringify({ success: true, data: deleteResult });
 }

@@ -180,3 +180,32 @@ export async function deleteTodoById(id: string): Promise<string> {
 
     return JSON.stringify({ success: true, data: deleteResult });
 }
+
+// SearchTasl funciton
+export async function SearchTask(todoQuery: string | null = "", completed: string | null = "all") {
+
+    console.log(`Search query: ${todoQuery}, Completed: ${completed}`);
+
+    const supabase = await createSupbaseServerClient();
+
+    let completedFilter: boolean | null = null;
+
+    if (completed === "true") {
+      completedFilter = true;
+    } else if (completed === "false") {
+      completedFilter = false;
+    }
+  
+    const { data, error } = await supabase
+      .rpc('search_todos', {
+        query: todoQuery || null,
+        completed_filter: completedFilter,
+      });
+  
+    if (error) {
+      console.error('Error searching todos:', error);
+      return [];
+    }
+    console.log(data);
+    return data;
+}

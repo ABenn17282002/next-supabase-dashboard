@@ -3,14 +3,25 @@ import { TrashIcon } from "@radix-ui/react-icons";
 import { Button } from "@/components/ui/button";
 import EditTodo from "./EditTodo";
 import { cn } from "@/lib/utils";
-import { readTodos } from "../actions";
+import { readTodos, SearchTask } from "../actions";
 import DeleteTodo from "./DeleteTodo";
 import { createSupbaseServerClient } from "@/lib/supabase";
+import { Todo } from "@/lib/types";
 
-export default async function ListOfTodo() {
-	const { data: todos } = await readTodos();
+interface ListOfTodosProps {
+	todoQuery: string;
+	completed:string;
+}
+
+export default async function ListOfTodo({ todoQuery,completed }: ListOfTodosProps) {
+	
+	const todos: Todo[] =
+    !todoQuery && completed === "all"
+      ? (await readTodos())?.data || []
+      : await SearchTask(todoQuery || null, completed !== "all" ? completed : null);
 
 	const supabase = await createSupbaseServerClient();
+
     const {
         data: { user },
     } = await supabase.auth.getUser();

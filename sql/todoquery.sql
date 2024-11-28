@@ -48,3 +48,31 @@ CREATE POLICY "Allow access to own todos"
 ON todo
 FOR SELECT
 USING (created_by = auth.uid());
+
+-- (5) SearchTodo Function
+CREATE OR REPLACE FUNCTION search_todos(
+  query TEXT DEFAULT NULL,
+  completed_filter BOOLEAN DEFAULT NULL
+)
+RETURNS TABLE (
+  id UUID,
+  completed BOOLEAN,
+  created_at DATE,
+  created_by UUID,
+  title TEXT
+) AS $$
+BEGIN
+  RETURN QUERY
+  SELECT 
+    t.id,
+    t.completed,
+    t.created_at,
+    t.created_by,
+    t.title
+  FROM todo t
+  WHERE 
+    (query IS NULL OR t.title ILIKE '%' || query || '%') -- whether title contains a string or not
+    AND 
+    (completed_filter IS NULL OR t.completed = completed_filter); -- completed state filtering
+END;
+$$ LANGUAGE plpgsql;
